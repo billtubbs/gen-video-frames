@@ -1,0 +1,40 @@
+# Example parameters file for gen-video-frames (see README.md).
+#
+#   gen-video-frames download examples/params.yaml
+#   gen-video-frames find-loops examples/params.yaml
+#   gen-video-frames generate examples/params.yaml
+
+# Source. With VIDEO_URL, `download` saves START_TIME to START_TIME +
+# DURATION of it to VIDEO_FILE. Without VIDEO_URL, VIDEO_FILE is used as
+# is (any local video file OpenCV can read).
+VIDEO_URL: https://www.youtube.com/watch?v=g6Ye4xwXyAw
+START_TIME: 211.4  # seconds into the source video
+DURATION: 211.4  # seconds
+VIDEO_FILE: clip.mp4
+
+# Region of each frame mapped onto the display, as (min, max) fractions of
+# the frame width/height. It's then centre-cropped to a square.
+CROP_X_FRAC: [0.23, 0.77]
+CROP_Y_FRAC: [0.0, 0.96]
+
+# Cache of raw LED values for every frame of VIDEO_FILE. Not checked
+# against the parameters - use a new name after changing VIDEO_FILE or
+# the crop.
+LED_FRAMES_FILE: clip_leds.npz
+
+# Loop search (`find-loops`)
+MIN_LOOP_SECONDS: 180
+MAX_LOOP_SECONDS: 211.3
+SEAM_HALF_WINDOW_SECONDS: 0.5
+MIN_CANDIDATE_SEPARATION_SECONDS: 5
+N_CANDIDATES: 10
+LOOP_CANDIDATES_FILE: loop_candidates.csv
+LOOP_SEAMS_DIR: loop_seams
+
+# Output (`generate`): frames START_FRAME to END_FRAME - 1 of VIDEO_FILE
+# (e.g. a loop from find-loops; default all frames), gamma-corrected and
+# dimmed, as one .npz to load on the display.
+START_FRAME: 16
+END_FRAME: 5948
+DIMNESS: 6
+OUTPUT_FILE: frames.npz
