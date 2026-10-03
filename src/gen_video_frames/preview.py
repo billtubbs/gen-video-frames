@@ -8,10 +8,10 @@ Colours are the output values with the gamma/dimness scaling undone
 full brightness.
 """
 
-from importlib import resources
 from pathlib import Path
 
 import numpy as np
+from display1593.data.ledArray_data_1593 import centres_x, centres_y
 from PIL import Image, ImageDraw
 
 from gen_video_frames.video import write_video
@@ -22,9 +22,7 @@ MARGIN = 10  # pixels around the display in each image
 
 def load_led_centres():
     """(x, y) centre of each LED, shape (1593, 2), y = 0 at the top."""
-    path = resources.files("gen_video_frames") / "data/led_centres_1593.csv"
-    with path.open() as f:
-        return np.loadtxt(f, delimiter=",", comments="#", skiprows=4)
+    return np.column_stack([centres_x, centres_y]).astype(float)
 
 
 def led_index_image(centres, size):

@@ -51,8 +51,7 @@ or crop.
 `preview` draws each LED as a dot at its real position on the display,
 coloured as it will show (the output with the gamma/dimness scaling
 undone), so a sequence can be checked before copying it to the Pi. The
-LED positions are packaged in `gen_video_frames/data/led_centres_1593.csv`
-(exported from display1593's `ledArray_data_1593.py`).
+LED positions come from display1593's `data/ledArray_data_1593.py`.
 
 Examples:
 - [examples/params.yaml](examples/params.yaml) - the LED fireplace, from
