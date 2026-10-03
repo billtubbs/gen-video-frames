@@ -4,6 +4,7 @@ Command-line interface:
     gen-video-frames download PARAMS_FILE     # VIDEO_URL clip -> VIDEO_FILE
     gen-video-frames find-loops PARAMS_FILE   # loop search over VIDEO_FILE
     gen-video-frames generate PARAMS_FILE     # LED frames -> OUTPUT_FILE
+    gen-video-frames preview PARAMS_FILE      # OUTPUT_FILE as displayed
 
 See README.md for the parameters file keys.
 """
@@ -45,10 +46,17 @@ def generate(params):
     generate_output(params)
 
 
+def preview(params):
+    from gen_video_frames.preview import preview
+
+    preview(params)
+
+
 COMMANDS = {
     "download": download,
     "find-loops": find_loops,
     "generate": generate,
+    "preview": preview,
 }
 
 

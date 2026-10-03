@@ -1,8 +1,10 @@
 """Downloading, sampling and cropping video."""
 
 import os
+import subprocess
 
 import cv2
+import numpy as np
 import yt_dlp
 
 
@@ -237,3 +239,31 @@ def sample_and_crop_youtube_clip(
 
     print(f"Saved {len(saved_paths)} cropped frames to '{output_dir}'.")
     return saved_paths
+
+
+def write_video(frames, fps, path):
+    """
+    Writes BGR frames (any iterable of same-size arrays, so long videos
+    needn't be held in memory) to an H.264 .mp4 with ffmpeg. (OpenCV's own
+    VideoWriter can't write .mp4 in some builds, and fails silently.)
+    """
+    process = None
+    for frame in frames:
+        if process is None:
+            height, width = frame.shape[:2]
+            command = [
+                "ffmpeg", "-y", "-loglevel", "error",
+                "-f", "rawvideo", "-pix_fmt", "bgr24",
+                "-s", f"{width}x{height}", "-r", f"{fps}", "-i", "-",
+                # H.264/yuv420p needs even dimensions
+                "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2",
+                "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                str(path),
+            ]  # fmt: skip
+            process = subprocess.Popen(command, stdin=subprocess.PIPE)
+        process.stdin.write(np.ascontiguousarray(frame).tobytes())
+    if process is None:
+        raise ValueError("No frames to write")
+    process.stdin.close()
+    if process.wait() != 0:
+        raise RuntimeError(f"ffmpeg failed writing '{path}'")

@@ -13,14 +13,13 @@ frame-to-frame distance matrix), so long clips are fine.
 """
 
 import csv
-import subprocess
 from pathlib import Path
 
 import cv2
 import numpy as np
 
 from gen_video_frames.led_frames import load_or_compute_led_frames
-from gen_video_frames.video import crop_frame
+from gen_video_frames.video import crop_frame, write_video
 
 BLOCK_SIZE = 500  # rows of the distance band computed at a time
 SEAM_PREVIEW_SECONDS = 3  # each side of the seam in the preview videos
@@ -113,25 +112,6 @@ def save_seam_preview(video_path, start, end, fps, x_frac, y_frac, path):
             frames.append(crop_frame(frame, x_frac=x_frac, y_frac=y_frac))
     cap.release()
     write_video(frames, fps, path)
-
-
-def write_video(frames, fps, path):
-    """
-    Writes a list of BGR frames (all the same size) to an H.264 .mp4 with
-    ffmpeg. (OpenCV's own VideoWriter can't write .mp4 in some builds,
-    and fails silently.)
-    """
-    height, width = frames[0].shape[:2]
-    command = [
-        "ffmpeg", "-y", "-loglevel", "error",
-        "-f", "rawvideo", "-pix_fmt", "bgr24",
-        "-s", f"{width}x{height}", "-r", f"{fps}", "-i", "-",
-        # H.264/yuv420p needs even dimensions
-        "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2",
-        "-c:v", "libx264", "-pix_fmt", "yuv420p",
-        str(path),
-    ]  # fmt: skip
-    subprocess.run(command, input=np.stack(frames).tobytes(), check=True)
 
 
 def find_loops(params):

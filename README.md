@@ -34,11 +34,12 @@ into that project's environment the same way:
 gen-video-frames download PARAMS_FILE     # VIDEO_URL clip -> VIDEO_FILE
 gen-video-frames find-loops PARAMS_FILE   # loop search over VIDEO_FILE
 gen-video-frames generate PARAMS_FILE     # LED frames -> OUTPUT_FILE
+gen-video-frames preview PARAMS_FILE      # OUTPUT_FILE as displayed
 ```
 
 A typical workflow: `download` a clip, `find-loops` to choose a loop that
-joins smoothly, set `START_FRAME`/`END_FRAME` to it, then `generate` the
-output file and copy it to the display (`fireplace/data/fire_frames.npz`
+joins smoothly, set `START_FRAME`/`END_FRAME` to it, `generate` the output file,
+`preview` it, and copy it to the display (`fireplace/data/fire_frames.npz`
 for `fireplace/play_fire_frames.py`). For a local video, skip `download`.
 
 `find-loops` and `generate` first convert every frame of `VIDEO_FILE` to
@@ -47,7 +48,17 @@ later runs are quick. The cache isn't checked against the parameters:
 use a new `LED_FRAMES_FILE` name, or delete it, after changing the video
 or crop.
 
-See [examples/params.yaml](examples/params.yaml) for a complete example.
+`preview` draws each LED as a dot at its real position on the display,
+coloured as it will show (the output with the gamma/dimness scaling
+undone), so a sequence can be checked before copying it to the Pi. The
+LED positions are packaged in `gen_video_frames/data/led_centres_1593.csv`
+(exported from display1593's `ledArray_data_1593.py`).
+
+Examples:
+- [examples/params.yaml](examples/params.yaml) - the LED fireplace, from
+  a YouTube video.
+- [examples/phytoBlue.yaml](examples/phytoBlue.yaml) - a rotating globe,
+  from a local NASA video.
 
 ## Parameters file keys
 
@@ -66,7 +77,11 @@ See [examples/params.yaml](examples/params.yaml) for a complete example.
 | `LOOP_SEAMS_DIR` | find-loops | A short video of the cropped source around each candidate's seam (default `loop_seams`). |
 | `START_FRAME`, `END_FRAME` | generate | Frames of `VIDEO_FILE` to output, end exclusive (default: all). |
 | `DIMNESS` | generate | Brightness divisor; output = raw<sup>2</sup> / (256 x `DIMNESS`) (default 6). |
-| `OUTPUT_FILE` | generate | Output `.npz`: array `led_frames`, shape `(n_frames, 1593, 3)`, `uint8`, plus the source `fps`. |
+| `OUTPUT_FILE` | generate, preview | Output `.npz`: array `led_frames`, shape `(n_frames, 1593, 3)`, `uint8`, plus the source `fps`. |
+| `PREVIEW_FRAMES` | preview | Output frame indices to show side by side (default: 4 evenly spaced). |
+| `PREVIEW_SIZE` | preview | Size of each frame's image in pixels (default 400). |
+| `PREVIEW_IMAGE` | preview | Preview image (default: `OUTPUT_FILE` name + `_preview.png`). |
+| `PREVIEW_VIDEO`, `PREVIEW_FPS` | preview | Optional preview video of every frame, at `PREVIEW_FPS` (default 24). |
 
 ## Loop search
 
@@ -87,13 +102,16 @@ that the source video is itself a loop.
 - `gen_video_frames.video` - `get_video_info`/`print_video_info`,
   `download_youtube_video` (yt-dlp, optionally a time range),
   `extract_frames_at_fps`, `extract_frames`, `crop_frame`,
-  `sample_and_crop_youtube_clip`.
+  `sample_and_crop_youtube_clip`, `write_video` (frames -> H.264 .mp4 via
+  ffmpeg).
 - `gen_video_frames.led_frames` - `compute_led_frames` (video -> raw LED
   values), `load_or_compute_led_frames` (cached), `scale_led_values`
   (gamma/dimness), `image_to_led_frame`, `generate_led_frames` (image
   folder -> one CSV per frame), `generate_output`.
 - `gen_video_frames.loops` - `distance_band`, `seam_scores`,
   `best_candidates`, `save_seam_preview`, `find_loops`.
+- `gen_video_frames.preview` - `load_led_centres`, `led_index_image`,
+  `render_frames`, `unscale_led_values`, `preview`.
 - `gen_video_frames.params` - `load_params`.
 
 ## Tests
